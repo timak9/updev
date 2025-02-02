@@ -8,13 +8,11 @@ import json
 import bcrypt
 from datetime import datetime
 
-# Configuration de la base de données SQLite
 DATABASE_URL = "sqlite:///./chat.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Modèles de base de données
 class UserDB(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -28,13 +26,10 @@ class MessageDB(Base):
     message = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
-# Création des tables
 Base.metadata.create_all(bind=engine)
 
-# Initialisation de l'application FastAPI
 app = FastAPI()
 
-# Configuration CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -43,7 +38,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Gestion des connexions WebSocket
 class ConnectionManager:
     def __init__(self):
         self.active_connections = []
@@ -61,7 +55,6 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-# Modèles Pydantic pour validation
 class User(BaseModel):
     username: str
     password: str
@@ -71,14 +64,12 @@ class Message(BaseModel):
     message: str
     timestamp: str = datetime.now().isoformat()
 
-# Fonction de hashage
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 def verify_password(password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-# Inscription
 @app.post("/register")
 def register(user: User):
     db = SessionLocal()
@@ -94,7 +85,6 @@ def register(user: User):
     db.close()
     return {"message": "Inscription réussie"}
 
-# Connexion
 @app.post("/login")
 def login(user: User):
     db = SessionLocal()
@@ -105,7 +95,6 @@ def login(user: User):
     db.close()
     return {"message": "Connexion réussie", "username": user.username}
 
-# API pour récupérer les messages
 @app.get("/messages")
 def get_messages():
     db = SessionLocal()
@@ -113,7 +102,6 @@ def get_messages():
     db.close()
     return [{"username": m.username, "message": m.message, "timestamp": m.timestamp.isoformat()} for m in messages]
 
-# API pour envoyer un message
 @app.post("/messages")
 async def post_message(msg: Message):
     db = SessionLocal()
@@ -128,7 +116,6 @@ async def post_message(msg: Message):
     }))
     return {"status": "Message envoyé"}
 
-# WebSocket pour le chat en temps réel
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
