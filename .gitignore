@@ -19990,3 +19990,4 @@ chat-frontend/node_modules/es-abstract/2021/BigInt/subtract.js
 chat-frontend/node_modules/es-abstract/2021/BigInt/toString.js
 chat-frontend/node_modules/es-abstract/2021/BigInt/unaryMinus.js
 chat-frontend/node_modules/es-abstract/2021/BigInt/unsignedRightShift.js
+chat-backend/chat.db
